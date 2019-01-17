@@ -1,0 +1,8 @@
+>>> bg result is: tp_fn-246 | fp_tn-422 | tp-202 | fp-50
+	 tpr:0.8211 | fpr:0.1185 | Precision:0.7984
+>>> mobilephone result is: tp_fn-141 | fp_tn-527 | tp-89 | fp-13
+	 tpr:0.6312 | fpr:0.0247 | Precision:0.8641
+>>> monitor result is: tp_fn-154 | fp_tn-514 | tp-146 | fp-58
+	 tpr:0.9481 | fpr:0.1128 | Precision:0.7122
+>>> telecontroller result is: tp_fn-127 | fp_tn-541 | tp-103 | fp-7
+	 tpr:0.8110 | fpr:0.0129 | Precision:0.9279
