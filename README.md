@@ -22,18 +22,18 @@
 ## Run Train and Test demo
 Configuration parameters lies in Root/src/configs/config.py
 1. directory
-   **data** is used to store training and testing data.
-   **log** is used to store traing logs.
-   **models** is used to store network parameters.
-   **src** is used to store training and testing codes.
++  **data** is used to store training and testing data.
++  **log** is used to store traing logs.
++  **models** is used to store network parameters.
++  **src** is used to store training and testing codes.
 2. train
-   **get image list** : running Root/src/utils/run.sh to generate traing and testing data list.
-   **pack training images**: running Root/src/prepare_data/convert2data.sh to pack training data.
-   **to train on packed images**: running Root/src/train/train_faceanti.py
++  **get image list** : running Root/src/utils/run.sh to generate traing and testing data list.
++  **pack training images**: running Root/src/prepare_data/convert2data.sh to pack training data.
++  **to train on packed images**: running Root/src/train/train_faceanti.py
 3. test
-   **test one image**: python Root/src/test/demo.py --img-path1 test.jpg --gpu 0 --load-epoch 10 --cmd-type imgtest
-   **test a video**: python Root/src/test/demo.py --file-in test.mp4 --gpu 0 --load-epoch 10 --cmd-type videotest
-   **test on a test dataset**: python demo.py --file-in ../../data/test.lst --out-file ./output/record.txt --base-dir .../test_imgs/ --load-epoch 25 --cmd-type txtlisttest
++  **test one image**: python Root/src/test/demo.py --img-path1 test.jpg --gpu 0 --load-epoch 10 --cmd-type imgtest
++  **test a video**: python Root/src/test/demo.py --file-in test.mp4 --gpu 0 --load-epoch 10 --cmd-type videotest
++  **test on a test dataset**: python demo.py --file-in ../../data/test.lst --out-file ./output/record.txt --base-dir .../test_imgs/ --load-epoch 25 --cmd-type txtlisttest
 ***
 ## HS Demo and Properties
 ## Results on Test data
