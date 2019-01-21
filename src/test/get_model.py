@@ -20,7 +20,7 @@ import mxnet as mx
 from sklearn import preprocessing as skpro
 sys.path.append(os.path.join(os.path.dirname(__file__),'../configs'))
 from config import cfgs
-sys.path.append(os.path.join(os.path.dirname(__file__),'../common'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'../utils'))
 from util import Img_Pad
 
 

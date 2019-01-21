@@ -1,14 +1,14 @@
 # Reproduction of MobileNetV2 using MXNet for Face Anti Spoofing
 ***
 ## Project Descriptions
-**created by :** lxy and shj
-**Time:**  2018/12/10 15:09
-**project** Face Anti Spoofing
-**company:** Senscape
-**rversion:** 0.1
-**tools:**   python 2.7
-**modified:**
-**description:** The codes for training and testing
++ **created by :** lxy and shj
++ **Time:**  2018/12/10 15:09
++ **project** Face Anti Spoofing
++ **company:** Senscape
++ **rversion:** 0.1
++ **tools:**   python 2.7
++ **modified:**
++ **description:** The codes for training and testing
 ***
 ## Requests
 * mxnet >= 1.2.0
@@ -16,9 +16,9 @@
 * opencv >= 3.4.0
 ***
 ## Training Data
-The training datas are downloaded from internet,using the tool [BaiduDownload](https://github.com/kong36088/BaiduImageSpider)
-We have created the dataset including 4 classes (Mobilephone:1 TV:2 telectroller:3 background:0).
-The dataset lies on 192.168.0.9: /data/lxy_home/data/face_anti_data/
+* The training datas are downloaded from internet,using the tool [BaiduDownload](https://github.com/kong36088/BaiduImageSpider)
+* We have created the dataset including 4 classes (Mobilephone:1 TV:2 telectroller:3 background:0).
+* The dataset lies on 192.168.0.9: /data/lxy_home/data/face_anti_data/
 ## Run Train and Test demo
 Configuration parameters lies in Root/src/configs/config.py
 1. directory

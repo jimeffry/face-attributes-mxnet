@@ -201,7 +201,7 @@ if __name__ == '__main__':
         test_img(parms)
     elif cmd_type in 'videotest':
         test_video(parms)
-    elif cmd_type in 'filetest':
+    elif cmd_type in 'txtlisttest':
         evalue(parms)
     else:
         print('Please input right cmd')

@@ -3,4 +3,4 @@
 
 ##test filelist
 python demo.py --file-in ../../data/FaceAnti_test.lst --out-file ./output/record4.txt --base-dir /home/lxy/Downloads/DataSet/face_anti \
-        --load-epoch 22 --cmd-type filetest
+        --load-epoch 25 --cmd-type txtlisttest
