@@ -1,10 +1,11 @@
 # Reproduction of MobileNetV2 using MXNet for Face Anti Spoofing
+* The origin mobilenetV2 code is here [mxnet-mobilenet](https://github.com/liangfu/mxnet-mobilenet-v2)
 ***
 ## Project Descriptions
 + **created by :** lxy and shj
 + **Time:**  2018/12/10 15:09
 + **project** Face Anti Spoofing
-+ **company:** Senscape
++ **company:** 
 + **rversion:** 0.1
 + **tools:**   python 2.7
 + **modified:**
