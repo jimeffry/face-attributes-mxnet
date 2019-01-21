@@ -16,7 +16,7 @@
 # under the License.
 
 import os
-from common.util import download_file
+from utils.util import download_file
 
 _base_model_url = 'http://data.mxnet.io/models/'
 _default_model_info = {
