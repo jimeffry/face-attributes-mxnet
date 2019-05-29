@@ -20,6 +20,25 @@ import os
 import errno
 import numpy as np 
 import cv2
+import argparse
+
+def parms():
+    parser = argparse.ArgumentParser(description='gen ')
+    parser.add_argument('--img-dir',type=str,dest="img_dir",default='./',\
+                        help='the directory should include 2 more Picturess')
+    parser.add_argument('--file-in',type=str,dest="file_in",default="train.txt",\
+                        help='img paths saved file')
+    parser.add_argument('--save-dir',type=str,dest="save_dir",default='./',\
+                        help='img saved dir')
+    parser.add_argument('--base-id',type=int,dest="base_id",default=0,\
+                        help='img id')
+    parser.add_argument('--out-file',type=str,dest="out_file",default="train.txt",\
+                        help='out img paths saved file')
+    parser.add_argument('--cmd-type',type=str,dest="cmd_type",default="None",\
+                        help='which code to run: gen_trainfile')
+    parser.add_argument('--file2-in',type=str,dest="file2_in",default="train2.txt",\
+                        help='label files')
+    return parser.parse_args()
 
 def download_file(url, local_fname=None, force_write=False):
     # requests is not default installed
@@ -147,3 +166,33 @@ def Img_Pad(img,crop_size):
         img_out = cv2.copyMakeBorder(img_out,top=int(pad_u),bottom=int(pad_d),left=int(pad_l),right=int(pad_r),\
                                     borderType=cv2.BORDER_CONSTANT,value=color) #BORDER_REPLICATE
     return img_out
+
+def generate_train_label(file_in,fileout):
+    '''
+    file_in: input_label csv file
+    fileout: ouput train file
+    '''
+    f_in = open(file_in,'rb')
+    dict_keys = f_in.readline().strip().split('')
+    f_in.close()
+    f_in = open(file_in,'rb')
+    print('read data dict_keys:',dict_keys)
+    list_out = []
+    for name in dict_keys:
+        list_out.append([])
+    data_dict = dict(zip(dict_keys,list_out))
+    reader = csv.DictReader(f_in)
+    print(len(reader))
+    #for f_item in reader:
+        #print(f_item['filename'])
+    f_in.close()
+    
+if __name__ == '__main__':
+    args = parms()
+    file_in = args.file_in
+    file_out = args.out_file
+    cmd = args.cmd_type
+    if cmd=='gen_trainfile':
+        generate_train_label(file_in,file_out)
+    else:
+        print("please input cmd right")

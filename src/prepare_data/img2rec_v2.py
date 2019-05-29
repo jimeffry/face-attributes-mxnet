@@ -23,17 +23,19 @@ except ImportError:
     multiprocessing = None
 
 def parse_lst_line(line):
-  vec = line.strip().split("\t")
+  vec = line.strip().split(",")
   #vec = line.strip().split(" ")
-  assert len(vec)>=3
+  assert len(vec)==22
   pack_type = 0 # pack:1 pack_img:0
-  image_path = vec[2]
+  image_path = vec[0]
   #print('label',vec[1])
-  label = string.atoi(vec[1])
-  bbox = None
-  landmark = None
+  #label = string.atoi(vec[1])
+  #bbox = None
+  #landmark = None
+  label = []
   #print(vec)
   if len(vec)>3:
+    '''
     bbox = np.zeros( (4,), dtype=np.int32)
     for i in xrange(3,7):
       bbox[i-3] = int(vec[i])
@@ -43,7 +45,10 @@ def parse_lst_line(line):
       for i in xrange(7,17):
         _l.append(float(vec[i]))
       landmark = np.array(_l).reshape( (2,5) ).T
-  return image_path, label, bbox, landmark, pack_type
+    '''
+    for i in range(1,22):
+        label.append(int(vec[i]))
+  return image_path, label, pack_type
 
 def read_list(path_in):
     with open(path_in) as fin:
@@ -55,16 +60,17 @@ def read_list(path_in):
                 break
             item = edict()
             item.flag = 0
-            item.image_path, label, item.bbox, item.landmark, item.pack_type = parse_lst_line(line)
+            item.image_path, item.label, item.pack_type = parse_lst_line(line)
             item.id = _id
-            item.label = [label, item.pack_type]
+            #item.label = [label, item.pack_type]
+
             yield item
             _id+=1
-        #_id-=60
+        #record the dataset info: image numbers and pack-type
         item = edict()
         item.flag = 2
         item.id = 0
-        item.label = [float(_id),0]
+        item.label = [float(_id),item.pack_type]
         yield item
 
 
@@ -166,15 +172,6 @@ def parse_args():
         Otherwise im2rec will read <prefix>.lst and create a database at <prefix>.rec')
     cgroup.add_argument('--exts', nargs='+', default=['.jpeg', '.jpg'],
                         help='list of acceptable image extensions.')
-    cgroup.add_argument('--chunks', type=int, default=1, help='number of chunks.')
-    cgroup.add_argument('--train-ratio', type=float, default=1.0,
-                        help='Ratio of images to use for training.')
-    cgroup.add_argument('--test-ratio', type=float, default=0,
-                        help='Ratio of images to use for testing.')
-    cgroup.add_argument('--recursive', type=bool, default=False,
-                        help='If true recursively walk through subdirs and assign an unique label\
-        to images in each folder. Otherwise only include images in the root folder\
-        and give them label 0.')
     cgroup.add_argument('--resize', type=int, default=0,
                         help='resize the shorter edge of image to the newsize, original images will\
         be packed by default.')
@@ -209,6 +206,7 @@ if __name__ == '__main__':
     if args.list:
         pass
         #make_list(args)
+        print("please set false")
     else:
         if os.path.isdir(args.prefix):
             working_dir = args.prefix
@@ -219,7 +217,7 @@ if __name__ == '__main__':
         count = 0
         print("work dir: ",files)
         for fname in files:
-            if fname.startswith(args.prefix) and fname.endswith('.lst'):
+            if  fname.endswith('.lst'):
                 print('Creating .rec file from', fname, 'in', working_dir)
                 count += 1
                 image_list = read_list(fname)

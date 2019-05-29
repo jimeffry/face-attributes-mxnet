@@ -7,12 +7,9 @@ import random
 import logging
 import sys
 import numbers
-import math
-import sklearn
 import datetime
 import numpy as np
 import cv2
-
 import mxnet as mx
 from mxnet import ndarray as nd
 from mxnet import io
@@ -39,32 +36,48 @@ def add_data_args(parser):
                       help='data num to train')
     return data
 
+
+class DataIterLoader():
+    def __init__(self, data_iter):
+        self.data_iter = data_iter
+
+    def __iter__(self):
+        self.data_iter.reset()
+        return self
+
+    def __next__(self):
+        batch = self.data_iter.__next__()
+        assert len(batch.data) == len(batch.label) == 1
+        data = batch.data[0]
+        label = batch.label[0]
+        return nd.array(data), nd.array(label)
+
+    def next(self):
+        return self.__next__() # for Python 2
+
 class FaceImageIter(io.DataIter):
     def __init__(self, batch_size, data_shape,
                  path_imgrec = None,
                  shuffle=False, aug_list=None, mean = None,
                  rand_mirror = False, cutoff = 0,
-                 data_name='data', label_name='softmax_label', **kwargs):
+                 data_name='data', label_name='sigmoid_label',num_class=21, **kwargs):
         super(FaceImageIter, self).__init__()
-        assert path_imgrec
         if path_imgrec:
-            logging.info('loading recordio %s...',
-                         path_imgrec)
+            logging.info('loading record %s...',path_imgrec)
             path_imgidx = path_imgrec[0:-4]+".idx"
-            self.imgrec = recordio.MXIndexedRecordIO(path_imgidx, path_imgrec, 'r')  # pylint: disable=redefined-variable-type
-            s = self.imgrec.read_idx(0)
-            header, _ = recordio.unpack(s)
+            self.imgrec = recordio.MXIndexedRecordIO(path_imgidx, path_imgrec, 'r')
+            s_dataset = self.imgrec.read_idx(0)
+            header, _ = recordio.unpack(s_dataset)
             if header.flag==2:
                 #print('header0 label', header.label)
                 self.header0 = (int(header.label[0]), int(header.label[1]))
                 #assert(header.flag==1)
                 self.imgidx = range(1, int(header.label[0]))
             else:
-              #print("header flag ",header.flag)
-                self.imgidx = list(self.imgrec.keys)
+                print("header flag is not 2 for dataset ",header.flag)
+                #self.imgidx = list(self.imgrec.keys)
             if shuffle:
                 self.seq = self.imgidx
-                self.oseq = self.imgidx
                 #print("init shutffle",len(self.seq))
             else:
                 self.seq = None
@@ -80,7 +93,7 @@ class FaceImageIter(io.DataIter):
         self.image_size = '%d,%d'%(data_shape[1],data_shape[2])
         self.rand_mirror = rand_mirror
         self.cutoff = cutoff
-        self.provide_label = [(label_name, (batch_size,))]
+        self.provide_label = [(label_name, (batch_size,num_class))]
         #print(self.provide_label[0][1])
         self.cur = 0
         self.nbatch = 0
@@ -116,8 +129,8 @@ class FaceImageIter(io.DataIter):
                         header, img = recordio.unpack_img(s)
                     label = header.label
                     #print("sample img label ",np.shape(np.asarray(img)),header.label)
-                    if not isinstance(label, numbers.Number):
-                        label = label[0]
+                    #if not isinstance(label, numbers.Number):
+                     #   label = label[0]
                     return label, img, None, None
                 else:
                     label, fname, bbox, landmark = self.imglist[idx]
@@ -176,6 +189,20 @@ class FaceImageIter(io.DataIter):
         else:
             pass
         return nd.array(img)
+    
+    def transform(self,img_numpy):
+        '''
+        img_numpy: rgb order
+        '''
+        img = img_numpy.asnumpy()
+        img = img / 255.0
+        img[:,:,0] -= 0.485
+        img[:,:,0] = img[:,:,0] / 0.229 
+        img[:,:,1] -= 0.456
+        img[:,:,1] = img[:,:,1] / 0.224
+        img[:,:,2] -= 0.406
+        img[:,:,2] = img[:,:,2] / 0.225
+        return nd.array(img)
 
 
     def next(self):
@@ -193,33 +220,34 @@ class FaceImageIter(io.DataIter):
         i = 0
         try:
             while i < batch_size:
-                label, s, bbox, landmark = self.next_sample()
+                label, s, _, _ = self.next_sample()
                 if self.header0[1]:
-                    _data = self.imdecode(s)
+                    img_data = self.imdecode(s)
                 else:
-                    _data = nd.array(s)
+                    img_data = nd.array(s[:,:,::-1])
                 #print("sample img shape ",np.shape(_data))
-                _data = self.resize_img(_data)
+                img_data = self.resize_img(img_data)
+                img_data = self.transform(img_data)
                 if self.rand_mirror:
-                    _rd = random.randint(0,1)
-                    if _rd==1:
-                        _data = mx.ndarray.flip(data=_data, axis=1)
-                if self.nd_mean is not None:
-                    _data = _data.astype('float32')
-                    _data -= self.nd_mean
-                    _data *= 0.0078125
+                    rd = random.randint(0,1)
+                    if rd==1:
+                        img_data = mx.ndarray.flip(data=img_data, axis=1)
+                if self.mean is not None:
+                    img_data = img_data.astype('float32')
+                    img_data -= self.nd_mean
+                    img_data *= 0.0078125
                 if self.cutoff>0:
-                    centerh = random.randint(0, _data.shape[0]-1)
-                    centerw = random.randint(0, _data.shape[1]-1)
+                    centerh = random.randint(0, img_data.shape[0]-1)
+                    centerw = random.randint(0, img_data.shape[1]-1)
                     half = self.cutoff//2
                     starth = max(0, centerh-half)
-                    endh = min(_data.shape[0], centerh+half)
+                    endh = min(img_data.shape[0], centerh+half)
                     startw = max(0, centerw-half)
-                    endw = min(_data.shape[1], centerw+half)
-                    _data = _data.astype('float32')
+                    endw = min(img_data.shape[1], centerw+half)
+                    img_data = img_data.astype('float32')
                     #print(starth, endh, startw, endw, _data.shape)
-                    _data[starth:endh, startw:endw, :] = 127.5
-                data = [_data]
+                    img_data[starth:endh, startw:endw, :] = 127.5
+                data = [img_data]
                 #print("next data shpe ",np.shape(_data))
                 try:
                     self.check_valid_image(data)
@@ -228,7 +256,6 @@ class FaceImageIter(io.DataIter):
                     continue
                 #print('aa',data[0].shape)
                 #data = self.augmentation_transform(data)
-                #print('bb',data[0].shape)
                 for datum in data:
                     assert i < batch_size, 'Batch size must be multiples of augmenter output length'
                     #print(datum.shape)
@@ -291,21 +318,29 @@ class FaceImageIter(io.DataIter):
 
 if __name__ == '__main__':
     
-    path_imgrec = "./FaceAnti_train.rec"
+    path_imgrec = "../../data/CelebA/train.rec"
     train_dataiter = FaceImageIter(
           batch_size           = 8,
           data_shape           = (3,224,224),
           path_imgrec          = path_imgrec,
           shuffle              = True,
-          rand_mirror          = 1,
-          mean                 = 127.5,
-          cutoff               = 0,
+          rand_mirror          = 0,
+          cutoff               = 0
       )
     train_dataiter = mx.io.PrefetchingIter(train_dataiter)
-    for i in range(2):
-        print("batch num ",i)
-        batch_data = train_dataiter.next()
-        print("batch ",train_dataiter.provide_data)
+    train_loader = DataIterLoader(train_dataiter)
+    #for i in range(2):
+     #   print("batch num ",i)
+      #  batch_data = train_dataiter.next()
+        #print("batch ",batch_data.label[0])
+    i=0
+    for train_data,label in train_loader:
+        train_data = train_data.as_in_context(mx.cpu(0))
+        print(train_data.shape)
+        i+=1
+        if i==4:
+            break
+
     '''
     record = mx.recordio.MXRecordIO('test.rec', 'w')
     label = 4 # label can also be a 1-D array, for example: label = [1,2,3]
