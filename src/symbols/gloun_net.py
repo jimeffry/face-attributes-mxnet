@@ -51,4 +51,14 @@ def get_symbol(ctx):
     return net
 
 if __name__ == '__main__':
-    get_symbol(mx.cpu(0))
+    net = get_symbol(mx.cpu(0))
+    net.summary(nd.zeros((1, 3, 112, 112),ctx=mx.cpu(0)))
+    inputs = mx.sym.var('data')
+    out = net(inputs)
+    internals = out.get_internals()
+    #print(internals)
+    #outputs = internals['resnetv20_pool1_fwd'+"_output"]
+    #outputs.tojson()
+    #net_show = mx.viz.plot_network(outputs, shape={'data': (1, 3, 224, 224)}, node_attrs={"shape":'oval',"fixedsize":'false'})
+    #net_show = mx.viz.plot_network(symbol=internals,shape={'data': (1, 3, 224, 224)})  
+    #net_show.render(filename="mxnet_rnetv1",cleanup=True)

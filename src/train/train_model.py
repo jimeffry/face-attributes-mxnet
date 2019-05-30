@@ -21,6 +21,27 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../configs'))
 from config import cfgs
 
 
+def save_gloun2model(self, prefix):
+        self.net.hybridize()
+        x = mx.sym.var('data')
+        y = self.net(x)
+        symnet = mx.symbol.load_json(y.tojson())
+        params = self.net.collect_params()
+        args = {}
+        auxs = {}    
+        for param in params.values():
+            v = param._reduce()
+            k = param.name
+            if 'running' in k:
+                auxs[k] = v
+            else:
+                args[k] = v            
+        mod = mx.mod.Module(symbol=symnet, context=self.ctx)
+        mod.bind(for_training=False, 
+                 data_shapes=[('data', (1, 3, self.data_shape, self.data_shape))])
+        mod.set_params(arg_params=args, aux_params=auxs)        
+        mod.save_checkpoint(prefix, epoch)
+
 def get_layer_output(symbol, arg_params, aux_params, layer_name):
     all_layers = symbol.get_internals()
     net = all_layers[layer_name+'_output']

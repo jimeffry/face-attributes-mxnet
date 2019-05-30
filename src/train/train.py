@@ -73,8 +73,9 @@ def train(args):
     net,new_arg,new_aux = get_layer_output(sym,arg_param,aux_param,'flatten')
     net_load = load_parms(net,new_arg,new_aux,devs)
     '''
+    #mobilenetv20_features_pool0_fwd
     net_train = get_symbol(devs)
-    net_train = get_pretrained_layer(net_train,'mobilenetv20_features_pool0_fwd')
+    net_train = get_pretrained_layer(net_train,'resnetv10_pool1_fwd')
     sigmoid_layer = add_layer(devs)
     net_train = graph(net_train,sigmoid_layer) 
     net_train.hybridize()

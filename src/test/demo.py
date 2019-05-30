@@ -64,16 +64,17 @@ def test_img(args):
     if img_data1 is None:
         print('img is none')
         return None
-    fram_h,fram_w = img_data1.shape[:2]
+    #fram_h,fram_w = img_data1.shape[:2]
+    img_data1 = np.expand_dims(img_data1,0)
     tmp,pred_id = Model.inference(img_data1)
     print("pred",tmp)
-    score_label = "{}".format(cfgs.DATA_NAME[pred_id])
+    score_label = "{}".format(cfgs.DATA_NAME[pred_id[0]])
     cv2.putText(img_data1,score_label,(int(20),int(30)),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
     cv2.imshow("video",img_data1)
     cv2.waitKey(0)
 
 def display(img,id):
-    fram_h,fram_w = img.shape[:2]
+    #fram_h,fram_w = img.shape[:2]
     score_label = "{}".format(cfgs.DATA_NAME[id])
     cv2.putText(img,score_label,(int(20),int(30)),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
     cv2.imshow("video",img)
@@ -114,7 +115,9 @@ def evalue(args):
         if img_data is None:
             print('img is none',img_path)
             continue
+        img_data = np.expand_dims(img_data,0)
         probility,pred_id = Model.inference(img_data)
+        pred_id = pred_id[0]
         pred_name = cfgs.DATA_NAME[pred_id]
         real_name = cfgs.DATA_NAME[int(real_label)]
         statistics_dic[real_name] +=1
@@ -180,7 +183,8 @@ def test_video(args):
             sys.stdout.flush()
             if ret: 
                 t = time.time()
-                _,pred_id = Model.inference(frame)
+                img = np.expand_dims(frame,0)
+                _,pred_id = Model.inference(img)
                 t_det = time.time() - t
             else:
                 continue
