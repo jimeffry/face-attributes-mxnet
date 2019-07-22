@@ -77,11 +77,13 @@ def evalu_img(args):
         img = img_ratio(img,240)
     rectangles = Detect_Model.detectFace(img)
     #draw = img.copy()
+    face_attributes = []
     if len(rectangles)>0:
         rectangles = sort_box(rectangles)
         img_verify = img_crop(img,rectangles[0],img.shape[1],img.shape[0])
-        tmp,pred_id = FaceAnti_Model.inference(img_verify)
-        label_show(img,rectangles,pred_id)
+        face_attributes.append(img_verify)
+        tmp,pred_id = FaceAnti_Model.inference(face_attributes)
+        label_show(img,rectangles,tmp,pred_id)
     else:
         print("No face detected")
     cv2.imshow("test",img)
@@ -90,6 +92,12 @@ def evalu_img(args):
 
 
 def label_show(img,rectangles,scores,pred_id):
+    '''
+    scores: shape-[batch,cls_nums]
+    pred_id: shape-[batch,cls_nums]
+    rectangles: shape-[batch,15]
+           0-5: x1,y1,x2,y2,score
+    '''
     for idx,rectangle in enumerate(rectangles):
         tmp_pred = pred_id[idx]
         tmp_scores = scores[idx]
@@ -237,14 +245,16 @@ def evalue_fromtxt(args):
         img_name = line_s[-1]
         new_dir = '/'.join(line_s[:-1]) 
         rectangles = Detect_Model.detectFace(img)
+        face_attributes = []
         if len(rectangles)> 0:
             idx_cnt+=1
             rectangles = sort_box(rectangles)
             img_verify = img_crop(img,rectangles[0],img.shape[1],img.shape[0])
-            tmp,pred_id = FaceAnti_Model.inference(img_verify)
+            face_attributes.append(img_verify)
+            tmp,pred_id = FaceAnti_Model.inference(face_attributes)
             #cv2.imwrite(savepath,img)
             if cfgs.show:
-                label_show(img,rectangles,pred_id)
+                label_show(img,rectangles,tmp,pred_id)
                 cv2.imshow("crop",img_verify)
                 cv2.waitKey(1000)
         else:
@@ -285,12 +295,12 @@ def video_demo(args):
         print("field to open video")
     else:
         print("video frame num: ",v_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        total_num = v_cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        #total_num = v_cap.get(cv2.CAP_PROP_FRAME_COUNT)
         frame_w = v_cap.get(cv2.CAP_PROP_FRAME_WIDTH)
         frame_h = v_cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        frame_cnt = 0
-        class_dict = dict()
-        pred_id_show = int(0)
+        #frame_cnt = 0
+        #class_dict = dict()
+        #pred_id_show = int(0)
         cv2.namedWindow("src")
         cv2.namedWindow("crop")
         cv2.moveWindow("crop",1400,10)

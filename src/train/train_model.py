@@ -15,8 +15,11 @@ import sys
 import time
 import numpy as np
 import mxnet as mx
+import gluoncv as gcv
 import logging
 from mxnet import nd, gluon, autograd
+sys.path.append(os.path.join(os.path.dirname(__file__),'../losses'))
+from  cust_loss import SigmoidEntropyLoss
 sys.path.append(os.path.join(os.path.dirname(__file__),'../configs'))
 from config import cfgs
 
@@ -165,18 +168,21 @@ def fit(net,train_loader,val_loader,**kargs):
     if load_epoch is None:
         net.initialize(mx.init.Xavier(), ctx=ctx)
     schedule = learning_rate_schedule(batch_size)
-    sgd_optimizer = mx.optimizer.SGD(learning_rate=lr, lr_scheduler=schedule)
+    opt_optimizer = mx.optimizer.SGD(learning_rate=lr, lr_scheduler=schedule)
     #ada_optimizer = mx.optimizer.Adam(learning_rate=lr)
     trainer = gluon.Trainer(
         params=net.collect_params(),
-        optimizer=sgd_optimizer)
+        optimizer=opt_optimizer)
         #optimizer='sgd',
         #optimizer_params={'learning_rate': lr})
     #metric = mx.metric.Accuracy()
     #loss_function = gluon.loss.SoftmaxCrossEntropyLoss()
-    loss_function = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
+    loss_function = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True,batch_axis=1)
+    #loss_function = gcv.loss.FocalLoss(spares_label=False,from_logits=True,batch_axis=1)
+    loss_function = SigmoidEntropyLoss(from_sigmoid=True,batch_axis=1)
     global_step = 0
     total_loss = 0
+    pos_factor = nd.array([2,8,8,5,8,10,10,8,3,5,2,2,8,10,5,2,2,3,5,8,5],dtype=np.float32,ctx=ctx)
     for epoch in range(num_epochs):
         for inputs, labels in train_loader:
             # Possibly copy inputs and labels to the GPU
@@ -189,7 +195,7 @@ def fit(net,train_loader,val_loader,**kargs):
             # during the backward pass.
             with autograd.record():
                 outputs = net(inputs)
-                loss_result = loss_function(outputs, labels)
+                loss_result = loss_function(outputs, labels,pos_weight=pos_factor)
             # Compute gradients by backpropagation and update the evaluation
             loss_result.backward()
             # Update the parameters by stepping the trainer; the batch size
@@ -203,15 +209,15 @@ def fit(net,train_loader,val_loader,**kargs):
                 #name, acc = metric.get()
                 acc = train_acc_metric(outputs,labels,mx.cpu(0))
                 #print('Step {}: {} = {}'.format(global_step, name, acc))
-                logging.info('Batch_cost: {:3f}s, Step {}: loss  ={}  lr = {}'.format((end-start),global_step,total_loss.asscalar()/(batch_size*cfgs.SHOW_TRAIN_INFO_INTE),sgd_optimizer.lr))
+                logging.info('epoch:{} \t Batch_cost:{:3f}S \t Step:{} loss:{} \t lr:{}'.format(epoch,(end-start),global_step,total_loss.asscalar()/21.0,opt_optimizer.lr))
                 #logging.info('acc: ',acc)
-                print('train acc,',acc.asnumpy())
-                #print('every loss: ',loss_result.asnumpy())
+                print('\t \t \t rain acc--: ',acc.asnumpy())
+                print('\t \t \t every loss: ',loss_result.asnumpy())
                 #print("loss,",total_loss.asscalar())
             if global_step % cfgs.SMRY_ITER == 0:
                 eval_acc = evaluate_accuracy_gluon(val_loader,net,ctx)
                 #print('Step {}: val_acc = {}'.format(global_step, eval_acc))
-                print('*** Test: Step: %d ' %(global_step),'acc:',eval_acc.asnumpy())
+                print('*** *****Test: Step: %d ' %(global_step),'\t', 'acc: ',eval_acc.asnumpy())
             
         #name, acc = metric.get()
         #logging.info("acc: ",acc)

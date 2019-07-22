@@ -13,11 +13,10 @@ from easydict import EasyDict
 
 cfgs = EasyDict()
 
-
 #------------------------------------------ convert data to tfrecofr config
 cfgs.BIN_DATA = 0 # whether read image data from binary
 cfgs.CLS_NUM = 21 #inlcude background:0, mobile:1  tv:2 remote-control:3
-cfgs.img_norm = 0
+cfgs.IMG_NORM = 0
 cfgs.FaceProperty = ['No_Beard','Mustache','Goatee','5_o_Clock_Shadow','Black_Hair','Blond_Hair','Brown_Hair','Gray_Hair','Bangs','Bald', \
         'Male','Wearing_Hat','Wearing_Earrings','Wearing_Necklace','Wearing_Necktie',\
         'Eyeglasses','Young','Smiling','Arched_Eyebrows','Bushy_Eyebrows','Blurry']
@@ -32,7 +31,7 @@ cfgs.DATA_NAME = ['bg','mobilephone','monitor','telecontroller']
 cfgs.DATA_NUM = 201600
 # ------------------------------------------ Train config
 cfgs.RD_MULT = 0
-cfgs.MODEL_PREFIX = 'mobilenetv2-1' #'mobilenetv2-1'
+cfgs.MODEL_PREFIX = 'mobilenetv2-2' #'mobilenetv2-2' #'mobilenetv2-1'
 cfgs.IMG_SIZE = [112,112]
 cfgs.BN_USE = True 
 cfgs.WEIGHT_DECAY = 1e-5

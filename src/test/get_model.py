@@ -77,15 +77,14 @@ class Face_Anti_Spoof(object):
     def process_img(self,imgs):
         img_out = []
         for img in imgs:
-            
-            img = img / 255.0
-            img[:,:,0] -= 0.485
-            img[:,:,0] = img[:,:,0] / 0.229 
-            img[:,:,1] -= 0.456
-            img[:,:,1] = img[:,:,1] / 0.224
-            img[:,:,2] -= 0.406
-            img[:,:,2] = img[:,:,2] / 0.225
-            
+            if cfgs.IMG_NORM:
+                img = img / 255.0
+                img[:,:,0] -= 0.485
+                img[:,:,0] = img[:,:,0] / 0.229 
+                img[:,:,1] -= 0.456
+                img[:,:,1] = img[:,:,1] / 0.224
+                img[:,:,2] -= 0.406
+                img[:,:,2] = img[:,:,2] / 0.225
             img = np.transpose(img,(2,0,1))
             img_out.append(img)
         return np.array(img_out)

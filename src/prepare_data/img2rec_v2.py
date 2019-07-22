@@ -86,7 +86,7 @@ def image_encode(args, i, item, q_out):
       if item.pack_type:
         with open(fullpath, 'rb') as fin:
             img = fin.read()
-            if cfgs.img_norm:
+            if cfgs.IMG_NORM:
                 img = (img-127.5)*0.0078125
         s = mx.recordio.pack(header, img)
         q_out.put((i, s, oitem))
@@ -108,7 +108,7 @@ def image_encode(args, i, item, q_out):
         if args.resize:
             #print("make resize")
             img = cv2.resize(img, (args.resize,args.resize))
-        if cfgs.img_norm:
+        if cfgs.IMG_NORM:
             img = (img-127.5)*0.0078125
         s = mx.recordio.pack_img(header, img, quality=args.quality, img_fmt=img_format)
         q_out.put((i, s, oitem))

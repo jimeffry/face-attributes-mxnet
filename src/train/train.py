@@ -18,6 +18,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 import mxnet as mx 
 from mxnet import nd
+import gluoncv as gcv
 from train_model import load_model,get_layer_output,load_parms,add_layer,graph,fit,get_pretrained_layer
 sys.path.append(os.path.join(os.path.dirname(__file__),'../configs'))
 from config import cfgs
@@ -73,6 +74,10 @@ def train(args):
     net,new_arg,new_aux = get_layer_output(sym,arg_param,aux_param,'flatten')
     net_load = load_parms(net,new_arg,new_aux,devs)
     '''
+    #model_prefix = cfgs.MODEL_PREFIX
+    #assert model_prefix is not None
+    #model_prefix = os.path.join(args.model_dir,cfgs.DATASET_NAME,model_prefix)
+    #net_train = gluon.SymbolBlock.imports(model_prefix+'-symbol.json', ['data'], model_prefix+'-'+'%04d' % load_num +'.params')
     #mobilenetv20_features_pool0_fwd
     net_train = get_symbol(devs)
     net_train = get_pretrained_layer(net_train,'resnetv10_pool1_fwd')
